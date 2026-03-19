@@ -146,14 +146,10 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#fafafa] text-[#0d3a5c] font-['Poppins',sans-serif] selection:bg-[#46b8c3]/30 pb-20">
-      
-      <header className="bg-white/80 backdrop-blur-md border-b border-slate-200/60 sticky top-0 z-50">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center">
-          <h1 className="font-semibold text-lg tracking-tight text-[#0d3a5c]">Savings on Rate Reduction</h1>
-        </div>
-      </header>
-
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="pt-8">
+          <h1 className="text-3xl font-bold tracking-tight text-[#0d3a5c]">Savings on Rate Reduction</h1>
+        </div>
         {activeCalculator === 'refinance' ? (
           <>
             {/* LOAN INPUTS + SNAPSHOT */}
@@ -161,17 +157,15 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 mt-10 mb-10"
+              className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mt-6 mb-8"
             >
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold tracking-tight text-[#0d3a5c]">Current Loan Setup & Snapshot</h2>
-          </div>
-          <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+          
+          <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
             <div>
-            <div className="grid max-w-[720px] grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="grid max-w-[720px] grid-cols-1 gap-3 md:grid-cols-2">
             {/* Loan Amount */}
             <div>
-              <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <label className="mb-1.5 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
                 Loan Amount
               </label>
               <div className="relative">
@@ -184,14 +178,14 @@ export default function App() {
                     const digits = e.target.value.replace(/\D/g, '');
                     setPrincipal(Number(digits) || 0);
                   }}
-                  className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] py-2.5 pl-8 pr-4 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
+                  className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] py-2 pl-8 pr-4 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
               </div>
             </div>
 
             {/* Tenure */}
             <div>
-              <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <label className="mb-1.5 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
                 Tenure
               </label>
               <div className="relative">
@@ -199,7 +193,7 @@ export default function App() {
                   type="number"
                   value={tenureYears}
                   onChange={(e) => setTenureYears(Number(e.target.value) || 1)}
-                  className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] px-4 py-2.5 pr-14 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
+                  className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] px-4 py-2 pr-14 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1b6896]/40 font-semibold text-base">years</span>
               </div>
@@ -209,7 +203,7 @@ export default function App() {
 
             {/* Current Rate */}
             <div>
-              <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+              <label className="mb-1.5 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
                 Current Rate
               </label>
               <div className="relative">
@@ -217,7 +211,7 @@ export default function App() {
                   type="number"
                   value={currentRate}
                   onChange={(e) => setCurrentRate(Number(e.target.value) || 0)}
-                  className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] px-4 py-2.5 pr-10 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
+                  className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] px-4 py-2 pr-10 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1b6896]/40 font-semibold text-base">%</span>
               </div>
@@ -225,7 +219,7 @@ export default function App() {
 
             {/* New Rate */}
             <div>
-              <div className="mb-2 flex items-center justify-between gap-3">
+              <div className="mb-1.5 flex items-center justify-between gap-3">
                 <label className="block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
                   New Rate
                 </label>
@@ -247,7 +241,7 @@ export default function App() {
                   type="number"
                   value={newRate}
                   onChange={(e) => setNewRate(Number(e.target.value) || 0)}
-                  className="w-full rounded-2xl border border-[#46b8c3]/30 bg-[#46b8c3]/[0.06] px-4 py-2.5 pr-10 text-lg font-bold text-[#1b6896] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
+                  className="w-full rounded-2xl border border-[#46b8c3]/30 bg-[#46b8c3]/[0.06] px-4 py-2 pr-10 text-lg font-bold text-[#1b6896] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#46b8c3]/50 font-semibold text-base">%</span>
               </div>
@@ -261,10 +255,10 @@ export default function App() {
               initial="hidden"
               animate="visible"
               variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } } }}
-              className="self-start rounded-3xl border border-slate-300/80 bg-slate-100/75 p-5"
+              className="self-start rounded-3xl border border-slate-300/80 bg-slate-100/75 p-4"
             >
               <motion.div variants={staggerItem}>
-                <div className="rounded-2xl bg-white/96 px-4 py-4 ring-1 ring-slate-300/80">
+                <div className="rounded-2xl bg-white/96 px-4 py-3 ring-1 ring-slate-300/80">
                   <div className="flex items-center justify-between gap-4">
                     <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Monthly EMI</p>
                     <p className="text-lg font-bold tracking-tight text-[#0b3453]">{formatCurrency(currentEmi)}</p>
@@ -272,7 +266,7 @@ export default function App() {
                 </div>
               </motion.div>
               <motion.div variants={staggerItem}>
-                <div className="mt-4 rounded-2xl bg-white/96 px-4 py-4 ring-1 ring-slate-300/80">
+                <div className="mt-3 rounded-2xl bg-white/96 px-4 py-3 ring-1 ring-slate-300/80">
                   <div className="flex items-center justify-between gap-4">
                     <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Total Interest</p>
                     <p className="text-lg font-bold tracking-tight text-[#0b3453]">{formatLakhs(currentTotalInterest)}</p>
