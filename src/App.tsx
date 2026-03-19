@@ -17,6 +17,12 @@ function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
+function formatIndianNumber(amount: number) {
+  return new Intl.NumberFormat('en-IN', {
+    maximumFractionDigits: 0,
+  }).format(amount);
+}
+
 function ScrollFadeIn({ children, className, delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-80px' });
@@ -150,83 +156,130 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {activeCalculator === 'refinance' ? (
           <>
-            {/* LOAN INPUTS */}
+            {/* LOAN INPUTS + SNAPSHOT */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
               className="bg-white rounded-3xl border border-slate-200 shadow-sm p-8 mt-10 mb-10"
             >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="mb-8">
+            <h2 className="text-2xl font-bold tracking-tight text-[#0d3a5c]">Current Loan Setup & Snapshot</h2>
+          </div>
+          <div className="grid grid-cols-1 gap-8 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
+            <div>
+            <div className="grid max-w-[720px] grid-cols-1 gap-4 md:grid-cols-2">
             {/* Loan Amount */}
             <div>
-              <label className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <IndianRupee className="w-3.5 h-3.5" /> Loan Amount
+              <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Loan Amount
               </label>
               <div className="relative">
                 <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#1b6896]/40 font-semibold text-base">₹</span>
                 <input
-                  type="number"
-                  value={principal}
-                  onChange={(e) => setPrincipal(Number(e.target.value) || 0)}
-                  className="w-full text-lg font-bold text-[#144d78] bg-[#144d78]/[0.03] rounded-2xl pl-8 pr-4 py-3.5 outline-none border-2 border-transparent focus:border-[#46b8c3] focus:bg-white transition-all"
+                  type="text"
+                  inputMode="numeric"
+                  value={formatIndianNumber(principal)}
+                  onChange={(e) => {
+                    const digits = e.target.value.replace(/\D/g, '');
+                    setPrincipal(Number(digits) || 0);
+                  }}
+                  className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] py-2.5 pl-8 pr-4 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
               </div>
-              <p className="text-base font-medium text-[#46b8c3] mt-2 pl-1">{formatLakhs(principal)}</p>
-            </div>
-
-            {/* Current Rate */}
-            <div>
-              <label className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Percent className="w-3.5 h-3.5" /> Current Rate
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={currentRate}
-                  onChange={(e) => setCurrentRate(Number(e.target.value) || 0)}
-                  className="w-full text-lg font-bold text-[#144d78] bg-[#144d78]/[0.03] rounded-2xl px-4 pr-10 py-3.5 outline-none border-2 border-transparent focus:border-[#46b8c3] focus:bg-white transition-all"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1b6896]/40 font-semibold text-base">%</span>
-              </div>
-              <p className="text-base font-medium mt-2 pl-1 invisible">&nbsp;</p>
-            </div>
-
-            {/* New Rate */}
-            <div>
-              <label className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <TrendingDown className="w-3.5 h-3.5" /> New Rate
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  value={newRate}
-                  onChange={(e) => setNewRate(Number(e.target.value) || 0)}
-                  className="w-full text-lg font-bold text-[#1b6896] bg-[#46b8c3]/[0.05] rounded-2xl px-4 pr-10 py-3.5 outline-none border-2 border-transparent focus:border-[#46b8c3] focus:bg-white transition-all"
-                />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#46b8c3]/50 font-semibold text-base">%</span>
-              </div>
-              <p className={`text-base font-medium mt-2 pl-1 ${currentRate > newRate ? 'text-[#46b8c3]' : 'invisible'}`}>
-                {currentRate > newRate ? `↓ ${(currentRate - newRate).toFixed(1)}% drop` : '\u00A0'}
-              </p>
             </div>
 
             {/* Tenure */}
             <div>
-              <label className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Calendar className="w-3.5 h-3.5" /> Tenure
+              <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Tenure
               </label>
               <div className="relative">
                 <input
                   type="number"
                   value={tenureYears}
                   onChange={(e) => setTenureYears(Number(e.target.value) || 1)}
-                  className="w-full text-lg font-bold text-[#144d78] bg-[#144d78]/[0.03] rounded-2xl px-4 pr-14 py-3.5 outline-none border-2 border-transparent focus:border-[#46b8c3] focus:bg-white transition-all"
+                  className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] px-4 py-2.5 pr-14 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1b6896]/40 font-semibold text-base">years</span>
               </div>
-              <p className="text-base font-medium mt-2 pl-1 invisible">&nbsp;</p>
             </div>
+
+            
+
+            {/* Current Rate */}
+            <div>
+              <label className="mb-2 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                Current Rate
+              </label>
+              <div className="relative">
+                <input
+                  type="number"
+                  value={currentRate}
+                  onChange={(e) => setCurrentRate(Number(e.target.value) || 0)}
+                  className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] px-4 py-2.5 pr-10 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1b6896]/40 font-semibold text-base">%</span>
+              </div>
+            </div>
+
+            {/* New Rate */}
+            <div>
+              <div className="mb-2 flex items-center justify-between gap-3">
+                <label className="block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
+                  New Rate
+                </label>
+                <span
+                  className={cn(
+                    'text-xs font-medium',
+                    newRate < currentRate ? 'text-[#46b8c3]' : newRate > currentRate ? 'text-amber-600' : 'text-slate-400'
+                  )}
+                >
+                  {newRate < currentRate
+                    ? `${(currentRate - newRate).toFixed(1)}% drop`
+                    : newRate > currentRate
+                      ? `${(newRate - currentRate).toFixed(1)}% increase`
+                      : '0.0% change'}
+                </span>
+              </div>
+              <div className="relative">
+                <input
+                  type="number"
+                  value={newRate}
+                  onChange={(e) => setNewRate(Number(e.target.value) || 0)}
+                  className="w-full rounded-2xl border border-[#46b8c3]/30 bg-[#46b8c3]/[0.06] px-4 py-2.5 pr-10 text-lg font-bold text-[#1b6896] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
+                />
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#46b8c3]/50 font-semibold text-base">%</span>
+              </div>
+              <p className="hidden">
+                {currentRate > newRate ? `↓ ${(currentRate - newRate).toFixed(1)}% drop` : '\u00A0'}
+              </p>
+            </div>
+            </div>
+            </div>
+            <motion.div
+              initial="hidden"
+              animate="visible"
+              variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08, delayChildren: 0.2 } } }}
+              className="self-start rounded-3xl border border-slate-300/80 bg-slate-100/75 p-5"
+            >
+              <motion.div variants={staggerItem}>
+                <div className="rounded-2xl bg-white/96 px-4 py-4 ring-1 ring-slate-300/80">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Monthly EMI</p>
+                    <p className="text-lg font-bold tracking-tight text-[#0b3453]">{formatCurrency(currentEmi)}</p>
+                  </div>
+                </div>
+              </motion.div>
+              <motion.div variants={staggerItem}>
+                <div className="mt-4 rounded-2xl bg-white/96 px-4 py-4 ring-1 ring-slate-300/80">
+                  <div className="flex items-center justify-between gap-4">
+                    <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Total Interest</p>
+                    <p className="text-lg font-bold tracking-tight text-[#0b3453]">{formatLakhs(currentTotalInterest)}</p>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
         </motion.div>
 
@@ -247,58 +300,6 @@ export default function App() {
           <p className="text-5xl md:text-7xl font-extrabold tracking-tight relative z-10 mt-2">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#46b8c3] to-[#8edce4]">{formatLakhs(s2Savings)} Saved.</span>
           </p>
-        </motion.div>
-
-        {/* CURRENT LOAN CONTEXT STRIP */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 mb-10"
-        >
-          <motion.div
-            initial="hidden"
-            animate="visible"
-            variants={{ hidden: {}, visible: { transition: { staggerChildren: 0.08, delayChildren: 0.35 } } }}
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
-          >
-            <motion.div variants={staggerItem}>
-              <label className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Wallet className="w-3.5 h-3.5" /> Loan Baseline
-              </label>
-              <div className="w-full text-lg font-bold text-[#144d78] bg-[#144d78]/[0.03] rounded-2xl px-4 py-3.5">
-                {formatLakhs(principal)} <span className="text-slate-400 font-normal text-base">@ {currentRate.toFixed(1)}%</span>
-              </div>
-              <p className="text-base mt-2 pl-1 invisible">​</p>
-            </motion.div>
-            <motion.div variants={staggerItem}>
-              <label className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <IndianRupee className="w-3.5 h-3.5" /> Monthly EMI
-              </label>
-              <div className="w-full text-lg font-bold text-[#144d78] bg-[#144d78]/[0.03] rounded-2xl px-4 py-3.5">
-                {formatCurrency(currentEmi)}
-              </div>
-              <p className="text-base mt-2 pl-1 invisible">​</p>
-            </motion.div>
-            <motion.div variants={staggerItem}>
-              <label className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" /> Remaining
-              </label>
-              <div className="w-full text-lg font-bold text-[#144d78] bg-[#144d78]/[0.03] rounded-2xl px-4 py-3.5">
-                {tenureYears} Years
-              </div>
-              <p className="text-base mt-2 pl-1 invisible">​</p>
-            </motion.div>
-            <motion.div variants={staggerItem}>
-              <label className="text-base font-semibold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-1.5">
-                <Coins className="w-3.5 h-3.5" /> Total Interest
-              </label>
-              <div className="w-full text-lg font-bold text-[#144d78] bg-[#144d78]/[0.03] rounded-2xl px-4 py-3.5">
-                {formatLakhs(currentTotalInterest)}
-              </div>
-              <p className="text-base mt-2 pl-1 invisible">​</p>
-            </motion.div>
-          </motion.div>
         </motion.div>
 
         {/* THE TWO STRATEGIES */}
@@ -399,11 +400,6 @@ export default function App() {
 
         {/* VISUAL PROOF (Charts) */}
         <ScrollFadeIn className="mb-10">
-          <div className="text-center mb-10">
-            <h2 className="text-2xl font-bold text-[#0d3a5c]">The Visual Proof</h2>
-            <p className="text-base text-slate-500 mt-2">See exactly how your money works for you over time.</p>
-          </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             
             {/* How Your Savings Actually Build Up — Area Chart */}
@@ -420,11 +416,8 @@ export default function App() {
                   monthlySavingsData.push({ year: `Y${y}`, yearNum: y, emiSaved: emiCumulative, tenureSaved: tenureCumulative });
                 }
                 return (<>
-                  <h3 className="text-base font-semibold text-[#0d3a5c] mb-2 flex items-center gap-2">
-                    <PiggyBank className="w-5 h-5 text-[#1b6896]/50" />
-                    Monthly Savings in Hand
-                  </h3>
-                  <p className="text-base text-slate-400 mb-6">Cumulative savings over time for each strategy</p>
+                  <h3 className="text-2xl font-bold text-[#0d3a5c] mb-2">Monthly Savings in Hand</h3>
+                  <p className="text-base text-slate-500 mb-6">Cumulative savings over time for each strategy</p>
                   <div className="h-[320px] w-full">
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={inView ? monthlySavingsData : []} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
@@ -491,11 +484,8 @@ export default function App() {
             {/* Total Payment Breakdown Chart */}
             <ChartReveal className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
               {(inView) => (<>
-              <h3 className="text-base font-semibold text-[#0d3a5c] mb-2 flex items-center gap-2">
-                <PieChartIcon className="w-5 h-5 text-[#1b6896]/50" />
-                Total Money Outflow
-              </h3>
-              <p className="text-base text-slate-400 mb-6">See how Principal, Interest & Savings stack up</p>
+              <h3 className="text-2xl font-bold text-[#0d3a5c] mb-2">Total Money Outflow</h3>
+              <p className="text-base text-slate-500 mb-6">See how Principal, Interest & Savings stack up</p>
               <div className="h-[320px] w-full">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={inView ? barChartData : []} margin={{ top: 30, right: 10, left: 10, bottom: 10 }} barSize={60}>
@@ -582,9 +572,6 @@ export default function App() {
         {/* RATE DROP SCENARIOS (0.25% Increments) */}
         <ScrollFadeIn className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-12">
           <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#46b8c3]/15 flex items-center justify-center">
-              <ArrowDown className="w-4 h-4 text-[#1b6896]" />
-            </div>
             <div>
               <h3 className="text-2xl font-bold text-[#0d3a5c]">Rate Drop Scenarios</h3>
               <p className="text-base text-slate-500 mt-1">See how every 0.25% drop impacts your loan</p>
@@ -601,7 +588,7 @@ export default function App() {
             <p className="text-base text-slate-400 mb-6">Savings at each rate increment</p>
             <div className="h-[300px] w-full">
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={inView ? [...rateScenarios].reverse() : []} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
+                <BarChart data={inView ? rateScenarios : []} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis 
                     dataKey="rate" 
@@ -697,5 +684,3 @@ function PieChartIcon(props: any) {
     </svg>
   )
 }
-
-
