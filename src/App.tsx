@@ -11,7 +11,9 @@ import { ArrowDown, ArrowRight, Calendar, CheckCircle2, Clock, Coins, IndianRupe
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import AmountCalc from './AmountCalcFlow';
+import AmountCalc from './AmountCalculator';
+import FixedVsFloatingScenarioCalc from './FixedVsFloatingScenarioCalc';
+import PrepayVsInvestCalc from './PrepayVsInvestCalc';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -61,7 +63,7 @@ function ChartReveal({ children, className }: { children: (inView: boolean) => R
 }
 
 export default function App() {
-  const [activeCalculator, setActiveCalculator] = useState<'refinance' | 'amount'>('refinance');
+  const [activeCalculator, setActiveCalculator] = useState<'refinance' | 'amount' | 'prepayment' | 'invest'>('refinance');
   
   // Base Loan Details (editable)
   const [principal, setPrincipal] = useState(10000000);
@@ -149,7 +151,7 @@ export default function App() {
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="sticky top-0 z-50 bg-[#fafafa]/80 backdrop-blur-md pt-4 pb-2">
           <div className="inline-flex rounded-2xl bg-slate-200/60 p-1">
-            {([['refinance', 'Refinancing'], ['amount', 'Amount Calculator']] as const).map(([key, label]) => (
+            {([['refinance', 'Refinancing'], ['amount', 'Amount Calculator'], ['prepayment', 'Flat vs Reducing'], ['invest', 'Prepay vs Invest']] as const).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setActiveCalculator(key)}
@@ -167,7 +169,13 @@ export default function App() {
         </div>
         <div className="pt-4">
           <h1 className="text-3xl font-bold tracking-tight text-[#0d3a5c]">
-            {activeCalculator === 'refinance' ? 'Savings on Rate Reduction' : 'Loan Eligibility Calculator'}
+            {activeCalculator === 'refinance'
+              ? 'Savings on Rate Reduction'
+              : activeCalculator === 'amount'
+                ? 'Loan Eligibility Calculator'
+                : activeCalculator === 'prepayment'
+                  ? 'Flat vs Reducing Balance EMI Calculator'
+                  : 'Prepay Loan vs Invest Money'}
           </h1>
         </div>
         {activeCalculator === 'refinance' ? (
@@ -670,8 +678,12 @@ export default function App() {
           </div>
         </ScrollFadeIn>
         </>
-        ) : (
+        ) : activeCalculator === 'amount' ? (
           <AmountCalc />
+        ) : activeCalculator === 'prepayment' ? (
+          <FixedVsFloatingScenarioCalc />
+        ) : (
+          <PrepayVsInvestCalc />
         )}
       </main>
     </div>
