@@ -31,7 +31,6 @@ type PrepaymentMode = 'none' | 'partial' | 'full';
 const DEFAULT_PRINCIPAL = 100000;
 const DEFAULT_TENURE_YEARS = 3;
 const DEFAULT_RATE = 10;
-const FLAT_TO_REDUCING_MULTIPLIER = 1.85;
 
 const PREPAYMENT_OPTIONS: { value: PrepaymentMode; label: string; description: string }[] = [
   { value: 'none', label: 'No Prepayment', description: 'Regular EMI flow for the full tenure.' },
@@ -64,6 +63,33 @@ function calculateReducingEmi(principal: number, annualRate: number, months: num
   if (monthlyRate === 0) return principal / months;
   const factor = Math.pow(1 + monthlyRate, months);
   return (principal * monthlyRate * factor) / (factor - 1);
+}
+
+function solveEquivalentReducingRate(principal: number, targetEmi: number, months: number) {
+  if (principal <= 0 || targetEmi <= 0 || months <= 0) return 0;
+
+  const zeroRateEmi = principal / months;
+  if (targetEmi <= zeroRateEmi) return 0;
+
+  let low = 0;
+  let high = 100;
+
+  while (calculateReducingEmi(principal, high, months) < targetEmi) {
+    high *= 2;
+    if (high >= 1_000) break;
+  }
+
+  for (let i = 0; i < 80; i += 1) {
+    const mid = (low + high) / 2;
+    const emiAtMid = calculateReducingEmi(principal, mid, months);
+    if (emiAtMid < targetEmi) {
+      low = mid;
+    } else {
+      high = mid;
+    }
+  }
+
+  return (low + high) / 2;
 }
 
 function getPrepaymentMonth(months: number, prepaymentYear: number) {
@@ -397,7 +423,10 @@ export default function FixedVsFloatingScenarioCalc() {
 
   const extraInterest = flat.totalInterest - reducing.totalInterest;
   const extraTotalCost = flat.totalAmount - reducing.totalAmount;
-  const flatEquivalentReducingRate = annualRate * FLAT_TO_REDUCING_MULTIPLIER;
+  const flatEquivalentReducingRate = useMemo(
+    () => solveEquivalentReducingRate(principal, flatEmi, months),
+    [flatEmi, months, principal],
+  );
   const schedulePrepaymentRow = prepaymentMode !== 'none' ? schedule.find((row) => row.month === prepaymentMonth) : null;
   const requestedPrepaymentLabel = prepaymentMode === 'none'
     ? 'No prepayment selected'
@@ -505,7 +534,7 @@ export default function FixedVsFloatingScenarioCalc() {
                   <p className="mt-2 text-2xl font-bold text-[#8edce4]">Rs. {formatCurrency(extraInterest)}</p>
                 </div>
                 <div className="rounded-2xl border border-white/10 bg-white/10 p-4 backdrop-blur-sm">
-                  <p className="text-sm uppercase tracking-[0.16em] text-white/60">Rough Equivalent Reducing Rate</p>
+                  <p className="text-sm uppercase tracking-[0.16em] text-white/60">Equivalent Reducing Rate</p>
                   <p className="mt-2 text-2xl font-bold">{flatEquivalentReducingRate.toFixed(2)}%</p>
                 </div>
               </div>
@@ -638,7 +667,7 @@ export default function FixedVsFloatingScenarioCalc() {
           </div>
           <div className="mt-5 rounded-2xl bg-slate-50 p-5">
             <p className="text-base leading-relaxed text-slate-600">
-              A flat rate of <span className="font-bold text-[#0d3a5c]">{annualRate.toFixed(2)}%</span> often behaves like a reducing-balance rate of roughly <span className="font-bold text-[#0d3a5c]">{flatEquivalentReducingRate.toFixed(2)}%</span>.
+              A flat rate of <span className="font-bold text-[#0d3a5c]">{annualRate.toFixed(2)}%</span> matches a reducing-balance rate of <span className="font-bold text-[#0d3a5c]">{flatEquivalentReducingRate.toFixed(2)}%</span> when both loans have the same principal, tenure, and EMI.
               That is because the lender keeps charging interest on the original principal instead of the declining balance.
             </p>
           </div>
