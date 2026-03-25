@@ -11,7 +11,7 @@ import { ArrowDown, ArrowRight, Calendar, CheckCircle2, Clock, Coins, IndianRupe
 import { motion, AnimatePresence, useInView } from 'motion/react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import AmountCalc from './AmountCalcFlow';
+import AmountCalc from './BasicAmountCalc';
 
 function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
