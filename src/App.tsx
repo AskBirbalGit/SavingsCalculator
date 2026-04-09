@@ -63,11 +63,16 @@ function ChartReveal({ children, className }: { children: (inView: boolean) => R
 export default function App() {
   const [activeCalculator, setActiveCalculator] = useState<'refinance' | 'amount'>('refinance');
   
-  // Base Loan Details (editable)
-  const [principal, setPrincipal] = useState(10000000);
-  const [currentRate, setCurrentRate] = useState(8);
-  const [newRate, setNewRate] = useState(7);
-  const [tenureYears, setTenureYears] = useState(20);
+  // Base Loan Details (editable) — string state for free-form editing
+  const [principalStr, setPrincipalStr] = useState('1,00,00,000');
+  const [currentRateStr, setCurrentRateStr] = useState('8');
+  const [newRateStr, setNewRateStr] = useState('7');
+  const [tenureStr, setTenureStr] = useState('20');
+
+  const principal = Number(principalStr.replace(/\D/g, '')) || 0;
+  const currentRate = parseFloat(currentRateStr) || 0;
+  const newRate = parseFloat(newRateStr) || 0;
+  const tenureYears = Number(tenureStr) || 1;
   const currentMonths = tenureYears * 12;
 
   // Current Scenario Calculations
@@ -147,9 +152,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#fafafa] text-[#0d3a5c] font-['Poppins',sans-serif] selection:bg-[#46b8c3]/30 pb-20">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="sticky top-0 z-50 bg-[#fafafa]/80 backdrop-blur-md pt-4 pb-2">
+        {/* <div className="sticky top-0 z-50 bg-[#fafafa]/80 backdrop-blur-md pt-4 pb-2">
           <div className="inline-flex rounded-2xl bg-slate-200/60 p-1">
-            {([['refinance', 'Refinancing'], ['amount', 'Amount Calculator']] as const).map(([key, label]) => (
+            {([['refinance', 'Rate Reset'], ['amount', 'Amount Calculator']] as const).map(([key, label]) => (
               <button
                 key={key}
                 onClick={() => setActiveCalculator(key)}
@@ -164,13 +169,13 @@ export default function App() {
               </button>
             ))}
           </div>
-        </div>
+        </div> */}
         <div className="pt-4">
           <h1 className="text-3xl font-bold tracking-tight text-[#0d3a5c]">
             {activeCalculator === 'refinance' ? 'Savings on Rate Reduction' : 'Loan Eligibility Calculator'}
           </h1>
         </div>
-        {activeCalculator === 'refinance' ? (
+        {true ? (
           <>
             {/* LOAN INPUTS + SNAPSHOT */}
             <motion.div
@@ -193,11 +198,9 @@ export default function App() {
                 <input
                   type="text"
                   inputMode="numeric"
-                  value={formatIndianNumber(principal)}
-                  onChange={(e) => {
-                    const digits = e.target.value.replace(/\D/g, '');
-                    setPrincipal(Number(digits) || 0);
-                  }}
+                  value={principalStr}
+                  onChange={(e) => setPrincipalStr(e.target.value.replace(/[^0-9,]/g, ''))}
+                  onBlur={() => setPrincipalStr(formatIndianNumber(principal))}
                   className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] py-2 pl-8 pr-4 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
               </div>
@@ -210,9 +213,10 @@ export default function App() {
               </label>
               <div className="relative">
                 <input
-                  type="number"
-                  value={tenureYears}
-                  onChange={(e) => setTenureYears(Number(e.target.value) || 1)}
+                  type="text"
+                  inputMode="numeric"
+                  value={tenureStr}
+                  onChange={(e) => setTenureStr(e.target.value.replace(/[^0-9]/g, ''))}
                   className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] px-4 py-2 pr-14 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1b6896]/40 font-semibold text-base">years</span>
@@ -228,9 +232,10 @@ export default function App() {
               </label>
               <div className="relative">
                 <input
-                  type="number"
-                  value={currentRate}
-                  onChange={(e) => setCurrentRate(Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="decimal"
+                  value={currentRateStr}
+                  onChange={(e) => setCurrentRateStr(e.target.value.replace(/[^0-9.]/g, ''))}
                   className="w-full rounded-2xl border border-slate-200 bg-[#144d78]/[0.03] px-4 py-2 pr-10 text-lg font-bold text-[#144d78] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1b6896]/40 font-semibold text-base">%</span>
@@ -258,9 +263,10 @@ export default function App() {
               </div>
               <div className="relative">
                 <input
-                  type="number"
-                  value={newRate}
-                  onChange={(e) => setNewRate(Number(e.target.value) || 0)}
+                  type="text"
+                  inputMode="decimal"
+                  value={newRateStr}
+                  onChange={(e) => setNewRateStr(e.target.value.replace(/[^0-9.]/g, ''))}
                   className="w-full rounded-2xl border border-[#46b8c3]/30 bg-[#46b8c3]/[0.06] px-4 py-2 pr-10 text-lg font-bold text-[#1b6896] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#46b8c3]/50 font-semibold text-base">%</span>
@@ -302,7 +308,7 @@ export default function App() {
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.15 }}
-          className="bg-gradient-to-br from-[#144d78] to-[#1b6896] rounded-3xl border border-[#1b6896] shadow-2xl p-8 md:p-12 mb-10 text-center relative overflow-hidden"
+          className="bg-gradient-to-br from-[#1b6896] to-[#2a85b5] rounded-3xl border border-[#2a85b5] shadow-2xl p-8 md:p-12 mb-10 text-center relative overflow-hidden"
         >
           <div className="absolute right-0 top-0 w-72 h-72 bg-white/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/3"></div>
           <div className="absolute left-0 bottom-0 w-48 h-48 bg-[#46b8c3]/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/3"></div>
@@ -369,7 +375,7 @@ export default function App() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-[#144d78] rounded-3xl p-8 shadow-sm border border-[#1b6896] hover:shadow-lg transition-shadow duration-300 group relative overflow-hidden flex flex-col text-white"
+            className="bg-[#1b6896] rounded-3xl p-8 shadow-sm border border-[#2a85b5] hover:shadow-lg transition-shadow duration-300 group relative overflow-hidden flex flex-col text-white"
           >
             <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
               <Zap className="w-32 h-32 text-[#46b8c3]" />
@@ -414,87 +420,7 @@ export default function App() {
 
         {/* VISUAL PROOF (Charts) */}
         <ScrollFadeIn className="mb-10">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            
-            {/* How Your Savings Actually Build Up — Area Chart */}
-            <ChartReveal className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
-              {(inView) => {
-                const totalYears = Math.ceil(currentMonths / 12);
-                const monthlySavingsData = [];
-                const monthlyEmiSaving = currentEmi - s1Emi;
-                for (let y = 0; y <= totalYears; y++) {
-                  const month = y * 12;
-                  const emiCumulative = monthlyEmiSaving * month;
-                  const monthsNotPaying = Math.max(0, month - s2Months);
-                  const tenureCumulative = currentEmi * monthsNotPaying;
-                  monthlySavingsData.push({ year: `Y${y}`, yearNum: y, emiSaved: emiCumulative, tenureSaved: tenureCumulative });
-                }
-                return (<>
-                  <h3 className="text-2xl font-bold text-[#0d3a5c] mb-2">Yearly Savings in Hand</h3>
-                  <p className="text-base text-slate-500 mb-6">Cumulative savings over time for each strategy</p>
-                  <div className="h-[320px] w-full">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={inView ? monthlySavingsData : []} margin={{ top: 10, right: 10, left: 10, bottom: 10 }}>
-                        <defs>
-                          <linearGradient id="gradEmiSave" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#46b8c3" stopOpacity={0.25} />
-                            <stop offset="100%" stopColor="#46b8c3" stopOpacity={0.02} />
-                          </linearGradient>
-                          <linearGradient id="gradTenureSave" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="0%" stopColor="#1b6896" stopOpacity={0.25} />
-                            <stop offset="100%" stopColor="#1b6896" stopOpacity={0.02} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                        <XAxis dataKey="yearNum" axisLine={false} tickLine={false} tick={{ fill: '#64748b', fontSize: 12, fontWeight: 600, fontFamily: 'Poppins' }} dy={10} ticks={Array.from({ length: Math.floor(Math.ceil(currentMonths / 12) / 2) + 1 }, (_, i) => i * 2)} tickFormatter={(val) => `Y${val}`} />
-                        <YAxis
-                          axisLine={false}
-                          tickLine={false}
-                          tick={{ fill: '#94a3b8', fontSize: 12, fontFamily: 'Poppins' }}
-                          tickFormatter={(value) => formatLakhs(value)}
-                          width={70}
-                        />
-                        <Tooltip
-                          cursor={{ strokeDasharray: '3 3', stroke: '#94a3b8' }}
-                          content={({ active, payload }) => {
-                            if (!active || !payload?.length) return null;
-                            const d = payload[0]?.payload;
-                            const ahead = d.emiSaved > d.tenureSaved ? 'EMI' : d.tenureSaved > d.emiSaved ? 'Tenure' : null;
-                            return (
-                              <div className="bg-white rounded-2xl border border-slate-200 shadow-xl p-4 min-w-[240px]">
-                                <p className="font-bold text-[#0d3a5c] text-base mb-3">Year {d.yearNum}</p>
-                                <div className="space-y-1.5 text-base">
-                                  <div className="flex justify-between gap-6">
-                                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#46b8c3] inline-block"></span>Reduce EMI</span>
-                                    <span className="font-semibold text-[#46b8c3]">{formatLakhs(d.emiSaved)}</span>
-                                  </div>
-                                  <div className="flex justify-between gap-6">
-                                    <span className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-[#1b6896] inline-block"></span>Reduce Tenure</span>
-                                    <span className="font-semibold text-[#1b6896]">{d.tenureSaved > 0 ? formatLakhs(d.tenureSaved) : 'Paying same EMI'}</span>
-                                  </div>
-                                  {ahead && (
-                                    <div className="flex justify-between gap-6 pt-1.5 mt-1 border-t border-slate-100">
-                                      <span className="font-medium text-[#0d3a5c]">{ahead === 'EMI' ? 'EMI leads by' : 'Tenure leads by'}</span>
-                                      <span className="font-bold text-[#144d78]">{formatLakhs(Math.abs(d.emiSaved - d.tenureSaved))}</span>
-                                    </div>
-                                  )}
-                                </div>
-                              </div>
-                            );
-                          }}
-                        />
-                        <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '20px', fontWeight: 500, fontFamily: 'Poppins' }}
-                          formatter={(value: string) => <span style={{ color: value === 'Reduce EMI' ? '#46b8c3' : '#1b6896' }}>{value}</span>}
-                        />
-                        <Area type="monotone" dataKey="emiSaved" name="Reduce EMI" stroke="#46b8c3" strokeWidth={2.5} fill="url(#gradEmiSave)" dot={false} activeDot={{ r: 5, strokeWidth: 2, fill: '#fff' }} />
-                        <Area type="monotone" dataKey="tenureSaved" name="Reduce Tenure" stroke="#1b6896" strokeWidth={2.5} fill="url(#gradTenureSave)" dot={false} activeDot={{ r: 5, strokeWidth: 2, fill: '#fff' }} />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                </>);
-              }}
-            </ChartReveal>
-
+          <div>
             {/* Total Payment Breakdown Chart */}
             <ChartReveal className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
               {(inView) => (<>
@@ -545,14 +471,14 @@ export default function App() {
                       }}
                     />
                     <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '20px', fontWeight: 500, fontFamily: 'Poppins' }}
-                      formatter={(value: string) => <span style={{ color: value === 'Principal' ? '#1b6896' : value === 'Interest' ? '#46b8c3' : 'rgba(13,58,92,0.5)' }}>{value}</span>}
+                      formatter={(value: string) => <span style={{ color: value === 'Principal' ? '#0d3a5c' : value === 'Interest' ? '#1b6896' : '#46b8c3' }}>{value}</span>}
                       payload={[
-                        { value: 'Principal', type: 'circle', color: '#1b6896' },
-                        { value: 'Interest', type: 'circle', color: '#46b8c3' },
-                        { value: 'You Save', type: 'circle', color: 'rgba(13,58,92,0.3)' },
+                        { value: 'Principal', type: 'circle', color: '#0d3a5c' },
+                        { value: 'Interest', type: 'circle', color: '#1b6896' },
+                        { value: 'You Save', type: 'circle', color: '#46b8c3' },
                       ]}
                     />
-                    <Bar dataKey="Principal" name="Principal" stackId="a" fill="#1b6896" radius={[0, 0, 8, 8]}
+                    <Bar dataKey="Principal" name="Principal" stackId="a" fill="#0d3a5c" radius={[0, 0, 8, 8]}
                       label={({ x, y, width, height, index }: any) => {
                         const d = barChartData[index];
                         if (d.Saved <= 0) return null;
@@ -565,12 +491,12 @@ export default function App() {
                         );
                       }}
                     />
-                    <Bar dataKey="Interest" name="Interest" stackId="a" fill="#46b8c3">
+                    <Bar dataKey="Interest" name="Interest" stackId="a" fill="#1b6896">
                       {barChartData.map((d, index) => (
                         <Cell key={`interest-${index}`} radius={d.Saved <= 0 ? [8, 8, 0, 0] : [0, 0, 0, 0]} />
                       ))}
                     </Bar>
-                    <Bar dataKey="Saved" name="You Save" stackId="a" fill="#0d3a5c" fillOpacity={0.12} radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="Saved" name="You Save" stackId="a" fill="#46b8c3" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
               </div>
@@ -670,9 +596,7 @@ export default function App() {
           </div>
         </ScrollFadeIn>
         </>
-        ) : (
-          <AmountCalc />
-        )}
+        ) : null /* <AmountCalc /> */}
       </main>
     </div>
   );
