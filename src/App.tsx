@@ -150,7 +150,7 @@ export default function App() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#fafafa] text-[#0d3a5c] font-['Poppins',sans-serif] selection:bg-[#46b8c3]/30 pb-20">
+    <div className="text-[#0d3a5c] font-['Poppins',sans-serif] pb-12">
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* <div className="sticky top-0 z-50 bg-[#fafafa]/80 backdrop-blur-md pt-4 pb-2">
           <div className="inline-flex rounded-2xl bg-slate-200/60 p-1">
@@ -170,11 +170,7 @@ export default function App() {
             ))}
           </div>
         </div> */}
-        <div className="pt-4">
-          <h1 className="text-3xl font-bold tracking-tight text-[#0d3a5c]">
-            {activeCalculator === 'refinance' ? 'Savings on Rate Reduction' : 'Loan Eligibility Calculator'}
-          </h1>
-        </div>
+
         {true ? (
           <>
             {/* LOAN INPUTS + SNAPSHOT */}
@@ -182,9 +178,15 @@ export default function App() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.1 }}
-              className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 mt-6 mb-8"
+              className="bg-white rounded-3xl border border-slate-200 shadow-sm mt-6 mb-8 overflow-hidden"
             >
-          
+
+          <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50">
+            <h3 className="text-2xl font-bold text-[#0d3a5c]">See How Much You Could Save</h3>
+            <p className="text-base text-slate-500 mt-1">Enter your current loan details and explore the impact of a rate reduction.</p>
+          </div>
+
+          <div className="p-6">
           <div className="grid grid-cols-1 gap-6 xl:grid-cols-[minmax(0,1.15fr)_minmax(320px,0.85fr)]">
             <div>
             <div className="grid max-w-[720px] grid-cols-1 gap-3 md:grid-cols-2">
@@ -269,7 +271,7 @@ export default function App() {
                   onChange={(e) => setNewRateStr(e.target.value.replace(/[^0-9.]/g, ''))}
                   className="w-full rounded-2xl border border-[#46b8c3]/30 bg-[#46b8c3]/[0.06] px-4 py-2 pr-10 text-lg font-bold text-[#1b6896] outline-none transition-all focus:border-[#46b8c3] focus:bg-white"
                 />
-                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#46b8c3]/50 font-semibold text-base">%</span>
+                <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#1b6896]/40 font-semibold text-base">%</span>
               </div>
               <p className="hidden">
                 {currentRate > newRate ? `↓ ${(currentRate - newRate).toFixed(1)}% drop` : '\u00A0'}
@@ -287,7 +289,7 @@ export default function App() {
                 <div className="rounded-2xl bg-white/96 px-4 py-3 ring-1 ring-slate-300/80">
                   <div className="flex items-center justify-between gap-4">
                     <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Monthly EMI</p>
-                    <p className="text-lg font-bold tracking-tight text-[#0b3453]">{formatCurrency(currentEmi)}</p>
+                    <p className="text-lg font-bold tracking-tight text-[#0d3a5c]">{formatCurrency(currentEmi)}</p>
                   </div>
                 </div>
               </motion.div>
@@ -295,11 +297,12 @@ export default function App() {
                 <div className="mt-3 rounded-2xl bg-white/96 px-4 py-3 ring-1 ring-slate-300/80">
                   <div className="flex items-center justify-between gap-4">
                     <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">Total Interest</p>
-                    <p className="text-lg font-bold tracking-tight text-[#0b3453]">{formatLakhs(currentTotalInterest)}</p>
+                    <p className="text-lg font-bold tracking-tight text-[#0d3a5c]">{formatLakhs(currentTotalInterest)}</p>
                   </div>
                 </div>
               </motion.div>
             </motion.div>
+          </div>
           </div>
         </motion.div>
 
@@ -375,43 +378,42 @@ export default function App() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.5 }}
-            className="bg-[#1b6896] rounded-3xl p-8 shadow-sm border border-[#2a85b5] hover:shadow-lg transition-shadow duration-300 group relative overflow-hidden flex flex-col text-white"
+            className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200 hover:shadow-lg transition-shadow duration-300 group relative overflow-hidden flex flex-col"
           >
-            <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
-              <Zap className="w-32 h-32 text-[#46b8c3]" />
+            <div className="absolute top-0 right-0 p-8 opacity-5 group-hover:opacity-10 transition-opacity">
+              <Zap className="w-32 h-32" />
             </div>
-            <div className="absolute inset-0 bg-gradient-to-br from-[#1b6896]/30 to-transparent pointer-events-none"></div>
             
-            <div className="mb-6 relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#46b8c3]/20 text-[#46b8c3] text-base font-semibold border border-[#46b8c3]/30">
+            <div className="mb-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#46b8c3]/10 text-[#1b6896] text-base font-semibold">
                 Reduce Tenure Keeping EMI Same
               </div>
             </div>
             
-            <h3 className="text-2xl font-bold text-white mb-2 relative z-10">Debt-Free Faster</h3>
-            <p className="text-base text-slate-400 mb-8 relative z-10">Keep paying your current EMI amount, and watch your loan vanish years earlier.</p>
+            <h3 className="text-2xl font-bold text-[#0d3a5c] mb-2 relative z-10">Debt-Free Faster</h3>
+            <p className="text-base text-slate-500 mb-8 relative z-10">Keep paying your current EMI amount, and watch your loan vanish years earlier.</p>
             
-            <div className="bg-gradient-to-br from-[#46b8c3]/20 to-[#46b8c3]/5 rounded-2xl p-6 mb-4 border border-[#46b8c3]/30 relative z-10 backdrop-blur-sm">
-              <p className="text-base font-semibold text-[#46b8c3] uppercase tracking-wider mb-2">Total Saved</p>
+            <div className="bg-gradient-to-br from-[#46b8c3]/15 to-[#46b8c3]/5 rounded-2xl p-6 mb-4 border border-[#46b8c3]/30 relative z-10">
+              <p className="text-base font-semibold text-[#144d78] uppercase tracking-wider mb-2">Total Saved</p>
               <span className="text-4xl font-bold text-[#46b8c3] tracking-tight">{formatLakhs(s2Savings)}</span>
             </div>
 
-            <div className="bg-[#46b8c3]/10 rounded-2xl p-6 mb-8 border border-[#46b8c3]/20 relative z-10 backdrop-blur-sm">
-              <p className="text-base font-semibold text-[#46b8c3] uppercase tracking-wider mb-2">Time Saved</p>
+            <div className="bg-[#46b8c3]/10 rounded-2xl p-6 mb-8 border border-[#46b8c3]/20 relative z-10">
+              <p className="text-base font-semibold text-[#144d78] uppercase tracking-wider mb-2">Time Saved</p>
               <div className="flex items-end gap-2">
                 <span className="text-4xl font-bold text-[#46b8c3] tracking-tight">{Math.floor(s2MonthsSaved / 12)}<span className="text-2xl">y</span> {s2MonthsSaved % 12}<span className="text-2xl">m</span></span>
-                <span className="text-base text-[#46b8c3] font-medium mb-0.5">earlier</span>
+                <span className="text-base text-[#1b6896] font-medium mb-0.5">earlier</span>
               </div>
             </div>
 
             <div className="space-y-4 mt-auto relative z-10">
-              <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                <span className="text-base text-slate-300 flex items-center gap-2"><IndianRupee className="w-5 h-5"/> EMI</span>
-                <span className="text-base font-semibold text-white">{formatCurrency(currentEmi)} <span className="text-slate-400 font-normal">(Same)</span></span>
+              <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                <span className="text-base text-slate-500 flex items-center gap-2"><IndianRupee className="w-5 h-5"/> EMI</span>
+                <span className="text-base font-semibold text-[#0d3a5c]">{formatCurrency(currentEmi)} <span className="text-slate-400 font-normal">(Same)</span></span>
               </div>
-              <div className="flex justify-between items-center pb-4 border-b border-white/10">
-                <span className="text-base text-slate-300 flex items-center gap-2"><Clock className="w-5 h-5"/> Tenure</span>
-                <span className="text-base font-semibold text-white">{Math.floor(s2Months / 12)} Years {s2Months % 12} mo</span>
+              <div className="flex justify-between items-center pb-4 border-b border-slate-100">
+                <span className="text-base text-slate-500 flex items-center gap-2"><Clock className="w-5 h-5"/> Tenure</span>
+                <span className="text-base font-semibold text-[#0d3a5c]">{Math.floor(s2Months / 12)} Years {s2Months % 12} mo</span>
               </div>
             </div>
           </motion.div>
@@ -419,9 +421,9 @@ export default function App() {
         </div>
 
         {/* VISUAL PROOF (Charts) */}
+        {/* Total Money Outflow — commented out
         <ScrollFadeIn className="mb-10">
           <div>
-            {/* Total Payment Breakdown Chart */}
             <ChartReveal className="bg-white rounded-3xl p-8 shadow-sm border border-slate-200">
               {(inView) => (<>
               <h3 className="text-2xl font-bold text-[#0d3a5c] mb-2">Total Money Outflow</h3>
@@ -506,9 +508,7 @@ export default function App() {
           </div>
 
         </ScrollFadeIn>
-
-
-
+        */}
         {/* RATE DROP SCENARIOS (0.25% Increments) */}
         <ScrollFadeIn className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-12">
           <div className="px-8 py-6 border-b border-slate-100 bg-slate-50/50 flex items-center gap-3">
@@ -518,7 +518,7 @@ export default function App() {
             </div>
           </div>
 
-          {/* Rate Drop Chart */}
+          {/* Rate Drop Chart — commented out
           <ChartReveal className="p-8 border-b border-slate-100">
             {(inView) => (<>
             <h4 className="text-base font-semibold text-[#0d3a5c] mb-2 flex items-center gap-2">
@@ -559,6 +559,7 @@ export default function App() {
             </div>
             </>)}
           </ChartReveal>
+          */}
 
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse min-w-[900px]">
