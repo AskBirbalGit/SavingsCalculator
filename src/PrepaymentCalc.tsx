@@ -444,18 +444,18 @@ export default function PrepaymentCalc() {
             <p className="text-sm text-slate-500 mt-1">Prepayment amount variations</p>
           </div>
         </div>
-        <div className="overflow-x-auto p-8">
-          <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm border-collapse border border-slate-300">
             <thead>
               <tr className="border-b border-slate-200">
-                <th className="pb-4 text-center font-semibold uppercase tracking-[0.15em] text-slate-400">Prepayment</th>
-                <th className="pb-4 text-center font-semibold uppercase tracking-[0.15em] text-[#1b6896] bg-[#1b6896]/[0.08]">Tenure (Prepay)</th>
-                <th className="pb-4 text-center font-semibold uppercase tracking-[0.15em] text-[#1b6896] bg-[#1b6896]/[0.08]">Amount Saved (Prepay)</th>
-                <th className="pb-4 text-center font-semibold uppercase tracking-[0.15em] text-[#2a4a7a] bg-[#2a4a7a]/[0.12]">Tenure (Invest)</th>
-                <th className="pb-4 text-center font-semibold uppercase tracking-[0.15em] text-[#2a4a7a] bg-[#2a4a7a]/[0.12]">Amount Saved (Invest)</th>
+                <th className="py-4 px-3 text-center font-semibold uppercase tracking-[0.15em] text-slate-400 border border-slate-300">Prepayment</th>
+                <th className="py-4 px-3 text-center font-semibold uppercase tracking-[0.15em] text-[#1b6896] bg-[#1b6896]/[0.08] border border-slate-300">Tenure (Prepay)</th>
+                <th className="py-4 px-3 text-center font-semibold uppercase tracking-[0.15em] text-[#1b6896] bg-[#1b6896]/[0.08] border border-slate-300">Amount Saved (Prepay)</th>
+                <th className="py-4 px-3 text-center font-semibold uppercase tracking-[0.15em] text-[#2a4a7a] bg-[#2a4a7a]/[0.12] border border-slate-300">Tenure (Invest)</th>
+                <th className="py-4 px-3 text-center font-semibold uppercase tracking-[0.15em] text-[#2a4a7a] bg-[#2a4a7a]/[0.12] border border-slate-300">Amount Saved (Invest)</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100">
+            <tbody>
               {Array.from({ length: 10 }, (_, i) => {
                 const factor = 0.75 + i * 0.05;
                 const varAmount = Math.round(prepaymentAmount * factor);
@@ -468,11 +468,11 @@ export default function PrepaymentCalc() {
                 const isCurrentRow = factor === 1.0;
                 return (
                   <tr key={i} className={isCurrentRow ? 'bg-[#144d78]/[0.04]' : ''}>
-                    <td className={`py-3 text-center font-medium ${isCurrentRow ? 'text-[#144d78] font-bold' : 'text-slate-600'}`}>{formatCurrency(varAmount)} {isCurrentRow ? '←' : ''}</td>
-                    <td className="py-3 text-center font-semibold text-[#1b6896] bg-[#1b6896]/[0.08]">{Math.floor(varTenureMonths / 12)} Yrs {varTenureMonths % 12 > 0 ? `${varTenureMonths % 12} Mo` : ''}</td>
-                    <td className="py-3 text-center font-semibold text-[#1b6896] bg-[#1b6896]/[0.08]">{formatCurrency(normalTotalMoneyOut - varTotalOut)}</td>
-                    <td className="py-3 text-center font-semibold text-[#2a4a7a] bg-[#2a4a7a]/[0.12]">{varInvest ? `${Math.floor(varInvest.day / 360) > 0 ? `${Math.floor(varInvest.day / 360)} Yrs ` : ''}${Math.ceil((varInvest.day % 360) / 30)} Mo` : '-'}</td>
-                    <td className="py-3 text-center font-semibold text-[#2a4a7a] bg-[#2a4a7a]/[0.12]">{varInvest ? formatCurrency(normalTotalMoneyOut - (varInvest.month * emi + varInvest.totalContributions - varInvest.surplusCorpus)) : '-'}</td>
+                    <td className={`py-3 px-3 text-center font-medium border border-slate-300 ${isCurrentRow ? 'text-[#144d78] font-bold' : 'text-slate-600'}`}>{formatCurrency(varAmount)} {isCurrentRow ? '←' : ''}</td>
+                    <td className="py-3 px-3 text-center font-semibold text-[#1b6896] bg-[#1b6896]/[0.08] border border-slate-300">{Math.floor(varTenureMonths / 12)} Yrs {varTenureMonths % 12 > 0 ? `${varTenureMonths % 12} Mo` : ''}</td>
+                    <td className="py-3 px-3 text-center font-semibold text-[#1b6896] bg-[#1b6896]/[0.08] border border-slate-300">{formatCurrency(normalTotalMoneyOut - varTotalOut)}</td>
+                    <td className="py-3 px-3 text-center font-semibold text-[#2a4a7a] bg-[#2a4a7a]/[0.12] border border-slate-300">{varInvest ? `${Math.floor(varInvest.day / 360) > 0 ? `${Math.floor(varInvest.day / 360)} Yrs ` : ''}${Math.ceil((varInvest.day % 360) / 30)} Mo` : '-'}</td>
+                    <td className="py-3 px-3 text-center font-semibold text-[#2a4a7a] bg-[#2a4a7a]/[0.12] border border-slate-300">{varInvest ? formatCurrency(normalTotalMoneyOut - (varInvest.month * emi + varInvest.totalContributions - varInvest.surplusCorpus)) : '-'}</td>
                   </tr>
                 );
               })}
