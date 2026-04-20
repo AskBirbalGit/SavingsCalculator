@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useMemo, useState, useRef } from 'react';
+import React, { useMemo, useState, useRef, useEffect } from 'react';
 import { calculateEMI, calculateTenure, generateAmortizationSchedule, formatCurrency, formatLakhs } from './utils/loanCalculator';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, Cell, AreaChart, Area } from 'recharts';
 
@@ -61,7 +61,25 @@ function ChartReveal({ children, className }: { children: (inView: boolean) => R
 }
 
 export default function App() {
-  const [activeCalculator, setActiveCalculator] = useState<'refinance' | 'prepayment'>('prepayment');
+  const getCalcFromHash = (): 'refinance' | 'prepayment' => {
+    const hash = window.location.hash.replace('#', '');
+    if (hash === 'rate-reset') return 'refinance';
+    if (hash === 'prepayment-savings') return 'prepayment';
+    return 'prepayment';
+  };
+
+  const [activeCalculator, setActiveCalculator] = useState<'refinance' | 'prepayment'>(getCalcFromHash);
+
+  useEffect(() => {
+    const onHashChange = () => setActiveCalculator(getCalcFromHash());
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, []);
+
+  const switchCalculator = (key: 'refinance' | 'prepayment') => {
+    setActiveCalculator(key);
+    window.location.hash = key === 'refinance' ? 'rate-reset' : 'prepayment-savings';
+  };
   
   // Base Loan Details (editable) — string state for free-form editing
   const [principalStr, setPrincipalStr] = useState('1,00,00,000');
@@ -157,7 +175,7 @@ export default function App() {
             {([['refinance', 'Rate Reset'], ['prepayment', 'Prepayment Savings']] as const).map(([key, label]) => (
               <button
                 key={key}
-                onClick={() => setActiveCalculator(key)}
+                onClick={() => switchCalculator(key)}
                 className={cn(
                   'px-5 py-2 rounded-xl text-sm font-semibold transition-all',
                   activeCalculator === key
