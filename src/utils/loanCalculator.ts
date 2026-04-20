@@ -63,6 +63,8 @@ export function generatePrepaymentAmortizationSchedule(principal: number, annual
   const dailyRate = annualRate / 365 / 100;
   const schedule = [];
   let totalInterest = 0;
+  let totalPrepayments = 0;
+  let totalEmis = 0;
   const safeDays = isFinite(months) ? Math.min(months * 30, 1200 * 30) : 1200 * 30;
   let currentPrepaymentAmount = prepaymentAmount;
 
@@ -78,11 +80,13 @@ export function generatePrepaymentAmortizationSchedule(principal: number, annual
     if (frequencyDays > 0 && day % frequencyDays === 0) {
       const prepayment = Math.min(currentPrepaymentAmount, balance);
       balance -= prepayment;
+      totalPrepayments += prepayment;
     }
 
     if (day % 30 === 0 && balance > 0) {
       const emiPayment = Math.min(emi, balance);
       balance -= emiPayment;
+      totalEmis += emiPayment;
     }
 
     if (day % 360 === 0 || balance <= 0 || day === safeDays) {
@@ -91,11 +95,108 @@ export function generatePrepaymentAmortizationSchedule(principal: number, annual
         year: Math.ceil(day / 360),
         balance: Math.max(0, balance),
         interestPaid: totalInterest,
-        principalPaid: principal - balance
+        principalPaid: principal - balance,
+        totalPrepayments,
+        totalEmis,
       });
     }
 
     if (balance <= 0) break;
+  }
+
+  return schedule;
+}
+
+export function calculateInvestmentBreakEven(principal: number, annualRate: number, emi: number, months: number, contributionAmount: number, frequencyDays: number, stepUpAmount: number = 0, stepUpFrequencyDays: number = 30, annualInvestmentReturn: number = 12) {
+  const dailyLoanRate = annualRate / 365 / 100;
+  const dailyInvestmentRate = annualInvestmentReturn / 365 / 100;
+  const safeDays = isFinite(months) ? Math.min(months * 30, 1200 * 30) : 1200 * 30;
+
+  let loanBalance = principal;
+  let investmentValue = 0;
+  let currentContribution = contributionAmount;
+  let totalInterest = 0;
+  let totalContributions = 0;
+
+  for (let day = 1; day <= safeDays; day++) {
+    const dailyInterest = loanBalance * dailyLoanRate;
+    loanBalance += dailyInterest;
+    totalInterest += dailyInterest;
+
+    investmentValue += investmentValue * dailyInvestmentRate;
+
+    if (stepUpAmount > 0 && frequencyDays > 0 && day % stepUpFrequencyDays === 0) {
+      currentContribution += stepUpAmount;
+    }
+
+    if (frequencyDays > 0 && day % frequencyDays === 0) {
+      investmentValue += currentContribution;
+      totalContributions += currentContribution;
+    }
+
+    if (day % 30 === 0) {
+      loanBalance -= Math.min(emi, loanBalance);
+    }
+
+    if (investmentValue >= loanBalance) {
+      return {
+        day,
+        month: Math.ceil(day / 30),
+        year: Math.ceil(day / 360),
+        investmentValue,
+        loanBalance,
+        totalInterestPaid: totalInterest,
+        totalContributions,
+        surplusCorpus: investmentValue - loanBalance,
+      };
+    }
+
+    if (loanBalance <= 0) break;
+  }
+
+  return null;
+}
+
+export function generateInvestmentSchedule(principal: number, annualRate: number, emi: number, months: number, contributionAmount: number, frequencyDays: number, stepUpAmount: number = 0, stepUpFrequencyDays: number = 30, annualInvestmentReturn: number = 12) {
+  const dailyLoanRate = annualRate / 365 / 100;
+  const dailyInvestmentRate = annualInvestmentReturn / 365 / 100;
+  const safeDays = isFinite(months) ? Math.min(months * 30, 1200 * 30) : 1200 * 30;
+
+  let loanBalance = principal;
+  let investmentValue = 0;
+  let currentContribution = contributionAmount;
+  const schedule = [];
+  let loanClosed = false;
+
+  for (let day = 1; day <= safeDays; day++) {
+    loanBalance += loanBalance * dailyLoanRate;
+    investmentValue += investmentValue * dailyInvestmentRate;
+
+    if (stepUpAmount > 0 && frequencyDays > 0 && day % stepUpFrequencyDays === 0) {
+      currentContribution += stepUpAmount;
+    }
+
+    if (frequencyDays > 0 && day % frequencyDays === 0) {
+      investmentValue += currentContribution;
+    }
+
+    if (day % 30 === 0) {
+      loanBalance -= Math.min(emi, loanBalance);
+    }
+
+    if (!loanClosed && investmentValue >= loanBalance) {
+      loanClosed = true;
+    }
+
+    if (day % 360 === 0 || loanBalance <= 0) {
+      schedule.push({
+        year: Math.ceil(day / 360),
+        investmentValue,
+        loanBalance: Math.max(0, loanBalance),
+      });
+    }
+
+    if (loanBalance <= 0) break;
   }
 
   return schedule;

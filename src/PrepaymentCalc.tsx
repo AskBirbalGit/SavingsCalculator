@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useRef, useEffect } from 'react';
-import { calculateEMI, generatePrepaymentAmortizationSchedule, formatCurrency, formatLakhs, formatExact } from './utils/loanCalculator';
+import { calculateEMI, generatePrepaymentAmortizationSchedule, calculateInvestmentBreakEven, generateInvestmentSchedule, formatCurrency, formatLakhs, formatExact } from './utils/loanCalculator';
 import { XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, BarChart, Bar, Legend, Cell, AreaChart, Area } from 'recharts';
 import { ArrowDown, ArrowRight, Calendar, CheckCircle2, Clock, Coins, IndianRupee, Percent, PiggyBank, Sparkles, TrendingDown, Wallet, Zap } from 'lucide-react';
 import { motion, AnimatePresence, useInView } from 'motion/react';
@@ -95,15 +95,41 @@ export default function PrepaymentCalc() {
   const prepaymentTenureMonths = prepaymentSchedule.length > 0 ? prepaymentSchedule[prepaymentSchedule.length - 1].month : months;
   const monthsSaved = normalTenureMonths - prepaymentTenureMonths;
 
+  const normalTotalMoneyOut = normalSchedule.length > 0 ? normalSchedule[normalSchedule.length - 1].totalEmis : 0;
+  const prepaymentTotalMoneyOut = prepaymentSchedule.length > 0
+    ? prepaymentSchedule[prepaymentSchedule.length - 1].totalEmis + prepaymentSchedule[prepaymentSchedule.length - 1].totalPrepayments
+    : 0;
+
+  const investmentBreakEven = calculateInvestmentBreakEven(
+    principal,
+    rate,
+    emi,
+    months,
+    prepaymentAmount,
+    frequencyDays,
+    enableStepUp ? stepUpAmount : 0,
+    stepUpFrequencyDays,
+    12
+  );
+
+  const breakEvenYears = investmentBreakEven ? Math.floor(investmentBreakEven.day / 360) : 0;
+  const breakEvenMonths = investmentBreakEven ? Math.ceil((investmentBreakEven.day % 360) / 30) : 0;
+
+  const investmentSchedule = generateInvestmentSchedule(
+    principal, rate, emi, months, prepaymentAmount, frequencyDays,
+    enableStepUp ? stepUpAmount : 0, stepUpFrequencyDays, 12
+  );
+
   // Chart data
   const chartData = useMemo(() => {
-    const maxLength = Math.max(normalSchedule.length, prepaymentSchedule.length);
+    const maxLength = Math.max(normalSchedule.length, prepaymentSchedule.length, investmentSchedule.length);
     return Array.from({ length: maxLength }, (_, i) => ({
       year: (i + 1),
       normal: normalSchedule[i]?.interestPaid || normalTotalInterest,
       prepayment: prepaymentSchedule[i]?.interestPaid || prepaymentTotalInterest,
+      investmentCorpus: investmentSchedule[i]?.investmentValue || 0,
     }));
-  }, [normalSchedule, prepaymentSchedule, normalTotalInterest, prepaymentTotalInterest]);
+  }, [normalSchedule, prepaymentSchedule, investmentSchedule, normalTotalInterest, prepaymentTotalInterest]);
 
   return (
     <div className="space-y-8">
@@ -114,7 +140,8 @@ export default function PrepaymentCalc() {
         transition={{ delay: 0.1 }}
         className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6"
       >
-        <div className="grid max-w-[720px] grid-cols-1 gap-3 md:grid-cols-2">
+        <div className="flex gap-8 items-start">
+        <div className="grid flex-1 max-w-[720px] grid-cols-1 gap-3 md:grid-cols-2">
           {/* Loan Amount */}
           <div>
             <label className="mb-1.5 block text-sm font-semibold uppercase tracking-[0.2em] text-slate-400">
@@ -271,6 +298,11 @@ export default function PrepaymentCalc() {
             </div>
           )}
         </div>
+        <div className="hidden md:flex flex-col items-center justify-center min-w-[180px] p-6 bg-[#144d78]/[0.03] rounded-2xl border border-slate-200">
+          <span className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-400 mb-2">Monthly EMI</span>
+          <span className="text-3xl font-extrabold text-[#144d78]">{formatCurrency(emi)}</span>
+        </div>
+        </div>
       </motion.div>
 
       {/* HERO SECTION */}
@@ -299,7 +331,7 @@ export default function PrepaymentCalc() {
       </motion.div>
 
       {/* RESULTS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         {/* Normal Scenario */}
         <motion.div
           initial={{ opacity: 0, x: -20 }}
@@ -310,16 +342,16 @@ export default function PrepaymentCalc() {
           <h3 className="text-xl font-bold text-[#0d3a5c] mb-6">Without Prepayment</h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center pb-4 border-b border-slate-100">
-              <span className="text-base text-slate-500">Monthly EMI</span>
-              <span className="text-base font-semibold text-[#0d3a5c]">{formatCurrency(emi)}</span>
-            </div>
-            <div className="flex justify-between items-center pb-4 border-b border-slate-100">
               <span className="text-base text-slate-500">Total Interest</span>
               <span className="text-base font-semibold text-[#0d3a5c]">{formatLakhs(normalTotalInterest)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-base text-slate-500">Tenure</span>
               <span className="text-base font-semibold text-[#0d3a5c]">{Math.ceil(normalTenureMonths / 12)} Years ({normalTenureMonths} Months)</span>
+            </div>
+            <div className="flex justify-between items-center pt-4 border-t border-slate-100">
+              <span className="text-base text-slate-500">Total Money Out</span>
+              <span className="text-base font-semibold text-[#0d3a5c]">{formatLakhs(normalTotalMoneyOut)}</span>
             </div>
           </div>
         </motion.div>
@@ -334,16 +366,16 @@ export default function PrepaymentCalc() {
           <h3 className="text-xl font-bold text-white mb-6">With Prepayment</h3>
           <div className="space-y-4">
             <div className="flex justify-between items-center pb-4 border-b border-white/20">
-              <span className="text-base text-slate-300">Monthly EMI</span>
-              <span className="text-base font-semibold text-white">{formatCurrency(emi)}</span>
-            </div>
-            <div className="flex justify-between items-center pb-4 border-b border-white/20">
               <span className="text-base text-slate-300">Total Interest</span>
               <span className="text-base font-semibold text-[#46b8c3]">{formatLakhs(prepaymentTotalInterest)}</span>
             </div>
             <div className="flex justify-between items-center">
               <span className="text-base text-slate-300">Tenure</span>
               <span className="text-base font-semibold text-white">{Math.ceil(prepaymentTenureMonths / 12)} Years ({prepaymentTenureMonths} Months)</span>
+            </div>
+            <div className="flex justify-between items-center pt-4 border-t border-white/20">
+              <span className="text-base text-slate-300">Total Money Out</span>
+              <span className="text-base font-semibold text-[#46b8c3]">{formatLakhs(prepaymentTotalMoneyOut)}</span>
             </div>
           </div>
           <div className="mt-6 p-4 bg-[#46b8c3]/10 rounded-2xl border border-[#46b8c3]/20">
@@ -355,6 +387,59 @@ export default function PrepaymentCalc() {
               <p className="text-base font-semibold text-[#46b8c3] uppercase tracking-wider mb-2">Time Saved</p>
               <span className="text-2xl font-bold text-[#46b8c3]">{Math.floor(monthsSaved / 12)} Years {monthsSaved % 12} Months</span>
             </div>
+          )}
+
+        </motion.div>
+
+        {/* Invest Instead Card */}
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.55 }}
+          className="bg-gradient-to-br from-[#0a1628] to-[#1a2d4d] rounded-3xl p-8 shadow-sm border border-[#1a2d4d] text-white"
+        >
+          <h3 className="text-xl font-bold text-white mb-6">Invest Instead (12% p.a.)</h3>
+          <div className="space-y-4">
+            {investmentBreakEven ? (
+              <>
+                <div className="flex justify-between items-center pb-4 border-b border-white/20">
+                  <span className="text-base text-slate-300">Loan Closable At</span>
+                  <span className="text-base font-semibold text-sky-300">
+                    {breakEvenYears > 0 ? `${breakEvenYears} Yrs ` : ''}{breakEvenMonths} Months
+                  </span>
+                </div>
+                <div className="flex justify-between items-center pb-4 border-b border-white/20">
+                  <span className="text-base text-slate-300">Investment Corpus</span>
+                  <span className="text-base font-semibold text-sky-300">{formatLakhs(investmentBreakEven.investmentValue)}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-base text-slate-300">Loan Balance at Break-even</span>
+                  <span className="text-base font-semibold text-sky-300">{formatLakhs(investmentBreakEven.loanBalance)}</span>
+                </div>
+                <div className="flex justify-between items-center pt-4 border-t border-white/20">
+                  <span className="text-base text-slate-300">Total Money Out</span>
+                  <span className="text-base font-semibold text-sky-300">{formatLakhs(investmentBreakEven.month * emi + investmentBreakEven.totalContributions)}</span>
+                </div>
+              </>
+            ) : (
+              <div className="flex justify-between items-center">
+                <span className="text-base text-white/90">Investment won't exceed loan balance before scheduled completion</span>
+              </div>
+            )}
+          </div>
+          {investmentBreakEven && (
+            <>
+              <div className="mt-6 p-4 bg-sky-400/10 rounded-2xl border border-sky-400/20">
+                <p className="text-base font-semibold text-sky-300 uppercase tracking-wider mb-2">Interest Saved</p>
+                <span className="text-2xl font-bold text-sky-300">{formatExact(normalTotalInterest - investmentBreakEven.totalInterestPaid)}</span>
+              </div>
+              <div className="mt-4 p-4 bg-sky-400/10 rounded-2xl border border-sky-400/20">
+                <p className="text-base font-semibold text-sky-300 uppercase tracking-wider mb-2">Time Saved vs Original Tenure</p>
+                <span className="text-2xl font-bold text-sky-300">
+                  {Math.floor((normalTenureMonths - investmentBreakEven.month) / 12)} Years {(normalTenureMonths - investmentBreakEven.month) % 12} Months
+                </span>
+              </div>
+            </>
           )}
         </motion.div>
       </div>
@@ -375,9 +460,10 @@ export default function PrepaymentCalc() {
             <Tooltip formatter={(value: number) => [formatLakhs(value), '']} />
             <Area type="monotone" dataKey="normal" stackId="1" stroke="#46b8c3" fill="#46b8c3" fillOpacity={0.6} />
             <Area type="monotone" dataKey="prepayment" stackId="2" stroke="#1b6896" fill="#1b6896" fillOpacity={0.6} />
+            <Area type="monotone" dataKey="investmentCorpus" stackId="3" stroke="#1a2d4d" fill="#1a2d4d" fillOpacity={0.6} />
           </AreaChart>
         </ResponsiveContainer>
-        <div className="flex justify-center gap-6 mt-4">
+        <div className="flex justify-center gap-6 mt-4 flex-wrap">
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-[#46b8c3] rounded"></div>
             <span className="text-sm text-slate-500">Without Prepayment</span>
@@ -385,6 +471,10 @@ export default function PrepaymentCalc() {
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 bg-[#1b6896] rounded"></div>
             <span className="text-sm text-slate-500">With Prepayment</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <div className="w-4 h-4 bg-[#1a2d4d] rounded"></div>
+            <span className="text-sm text-slate-500">Investment Corpus (12%)</span>
           </div>
         </div>
       </motion.div>
