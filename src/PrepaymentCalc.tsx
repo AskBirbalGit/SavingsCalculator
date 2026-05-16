@@ -322,12 +322,26 @@ export default function PrepaymentCalc() {
               <br />
               <span className="text-lg md:text-xl">+ Step up <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#46b8c3] to-[#8edce4] font-extrabold">{formatCurrency(stepUpAmount)}</span> {stepUpFrequency}</span>
             </>
-          )} =
+          )}
         </p>
 
-        <p className="text-5xl md:text-7xl font-extrabold tracking-tight relative z-10 mt-2">
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#46b8c3] to-[#8edce4]">{formatCurrency(investmentBreakEven ? normalTotalMoneyOut - (investmentBreakEven.month * emi + investmentBreakEven.totalContributions - investmentBreakEven.surplusCorpus) : 0)} Saved.</span>
-        </p>
+        <div className="relative z-10 mt-6 grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          {/* Prepayment Savings */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70 mb-2">Prepayment Savings</p>
+            <p className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#46b8c3] to-[#8edce4]">{formatCurrency(normalTotalMoneyOut - prepaymentTotalMoneyOut)}</span>
+            </p>
+          </div>
+
+          {/* If Invested Instead */}
+          <div className="bg-white/10 backdrop-blur-sm rounded-2xl p-6 border border-white/20">
+            <p className="text-sm font-semibold uppercase tracking-[0.2em] text-white/70 mb-2">If Invested @ 12% p.a.</p>
+            <p className="text-3xl md:text-4xl font-extrabold tracking-tight">
+              <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#46b8c3] to-[#8edce4]">{formatCurrency(investmentBreakEven ? normalTotalMoneyOut - (investmentBreakEven.month * emi + investmentBreakEven.totalContributions - investmentBreakEven.surplusCorpus) : 0)}</span>
+            </p>
+          </div>
+        </div>
       </motion.div>
 
       {/* RESULTS */}
